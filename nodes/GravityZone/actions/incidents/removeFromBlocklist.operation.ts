@@ -9,6 +9,8 @@ import { updateDisplayOptions, wrapData } from '../../utils/utilities';
 
 import { gravityZoneApiRequest } from '../../transport';
 
+import { companyTypeProperty, showForPartnerNested } from '../../utils/companyType';
+
 const properties: INodeProperties[] = [
 	{
 		displayName:
@@ -17,6 +19,7 @@ const properties: INodeProperties[] = [
 		type: 'notice',
 		default: '',
 	},
+	companyTypeProperty,
 	{
 		displayName: 'IDs',
 		name: 'ids',
@@ -24,6 +27,24 @@ const properties: INodeProperties[] = [
 		required: true,
 		default: '',
 		description: 'A comma-separated list of blocklist item IDs to remove (e.g. "id1, id2, id3")',
+	},
+	{
+		displayName: 'Options',
+		name: 'options',
+		type: 'collection',
+		placeholder: 'Add Option',
+		default: {},
+		options: [
+			{
+				displayName: 'Company ID',
+				name: 'companyId',
+				type: 'string',
+				default: '',
+				description:
+					'The ID of the company to which the blocklist items belong. Defaults to the company the API key used for the request belongs to.',
+				displayOptions: showForPartnerNested,
+			},
+		],
 	},
 ];
 
@@ -33,12 +54,16 @@ export const description = updateDisplayOptions(displayOptions, properties);
 
 export async function execute(this: IExecuteFunctions, i: number): Promise<INodeExecutionData[]> {
 	const idsStr = this.getNodeParameter('ids', i) as string;
+	const options = this.getNodeParameter('options', i, {});
+
 	const ids = idsStr
 		.split(',')
 		.map((id) => id.trim())
 		.filter(Boolean);
 
 	const params: IDataObject = { ids };
+
+	if (options.companyId) params.companyId = options.companyId;
 
 	const responseData = await gravityZoneApiRequest.call(
 		this,

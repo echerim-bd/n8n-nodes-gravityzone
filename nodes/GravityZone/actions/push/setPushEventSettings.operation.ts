@@ -9,6 +9,12 @@ import { processJsonInput, updateDisplayOptions, wrapData } from '../../utils/ut
 
 import { gravityZoneApiRequest } from '../../transport';
 
+import {
+	companyTypeProperty,
+	PARTNER_ONLY_VALUE,
+	showForPartnerNested,
+} from '../../utils/companyType';
+
 const properties: INodeProperties[] = [
 	{
 		displayName:
@@ -17,6 +23,7 @@ const properties: INodeProperties[] = [
 		type: 'notice',
 		default: '',
 	},
+	companyTypeProperty,
 	{
 		displayName: 'Status',
 		name: 'status',
@@ -80,6 +87,7 @@ const properties: INodeProperties[] = [
 			{ name: 'New Incident', value: 'new-incident' },
 			{ name: 'Outdated Update Server', value: 'supa-update-status' },
 			{ name: 'Overloaded Security Server', value: 'sva-load' },
+			{ name: 'Partner Change', value: 'partner-changed', description: PARTNER_ONLY_VALUE },
 			{ name: 'Product Modules Status', value: 'modules' },
 			{ name: 'Product Registration', value: 'registration' },
 			{ name: 'Ransomware Activity Detection', value: 'ransomware-mitigation' },
@@ -96,6 +104,24 @@ const properties: INodeProperties[] = [
 		],
 		description: 'List of event types to be sent to the web service',
 	},
+	{
+		displayName: 'Options',
+		name: 'options',
+		type: 'collection',
+		placeholder: 'Add Option',
+		default: {},
+		options: [
+			{
+				displayName: 'Subscribe to Companies',
+				name: 'subscribeToCompanies',
+				type: 'string',
+				default: '',
+				description:
+					'A comma-separated list of company IDs to receive events for. Include your own company as well. If not set, events are sent for all companies you manage.',
+				displayOptions: showForPartnerNested,
+			},
+		],
+	},
 ];
 
 const displayOptions = {
@@ -105,6 +131,8 @@ const displayOptions = {
 export const description = updateDisplayOptions(displayOptions, properties);
 
 export async function execute(this: IExecuteFunctions, i: number): Promise<INodeExecutionData[]> {
+	const options = this.getNodeParameter('options', i, {});
+
 	const status = this.getNodeParameter('status', i) as number;
 	const serviceType = this.getNodeParameter('serviceType', i) as string;
 	const serviceSettings = processJsonInput(this,
@@ -118,12 +146,26 @@ export async function execute(this: IExecuteFunctions, i: number): Promise<INode
 		subscribeToEventTypes[eventType] = true;
 	}
 
-	const responseData = await gravityZoneApiRequest.call(this, 'push', 'setPushEventSettings', {
+	const params: IDataObject = {
 		status,
 		serviceType,
 		serviceSettings,
 		subscribeToEventTypes,
-	});
+	};
+
+	if (options.subscribeToCompanies) {
+		params.subscribeToCompanies = (options.subscribeToCompanies as string)
+			.split(',')
+			.map((id) => id.trim())
+			.filter(Boolean);
+	}
+
+	const responseData = await gravityZoneApiRequest.call(
+		this,
+		'push',
+		'setPushEventSettings',
+		params,
+	);
 
 	return this.helpers.constructExecutionMetaData(wrapData(responseData), {
 		itemData: { item: i },

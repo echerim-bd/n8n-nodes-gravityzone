@@ -9,6 +9,8 @@ import { processJsonInput, updateDisplayOptions, wrapData } from '../../utils/ut
 
 import { gravityZoneApiRequest } from '../../transport';
 
+import { PARTNER_ONLY_VALUE } from '../../utils/companyType';
+
 const properties: INodeProperties[] = [
 	{
 		displayName:
@@ -67,6 +69,8 @@ const properties: INodeProperties[] = [
 			{ name: 'Integrity Monitoring Configuration Changes', value: 37 },
 			{ name: 'Mobile Security Monthly License Usage', value: 38 },
 			{ name: 'Data Insights License Usage', value: 39 },
+			{ name: 'Extended Email Security Usage', value: 40 },
+			{ name: 'Product Trial Status', value: 41, description: PARTNER_ONLY_VALUE },
 		],
 	},
 	{
@@ -75,7 +79,8 @@ const properties: INodeProperties[] = [
 		type: 'string',
 		required: true,
 		default: '',
-		description: 'A comma-separated list of target IDs (e.g. "id1, id2, id3")',
+		description:
+			'A comma-separated list of target IDs (e.g. "id1, id2, id3"). Targets depend on the report type and may be company, group, container or endpoint IDs - pass a company ID to scope the report to that company.',
 	},
 	{
 		displayName: 'Additional Fields',

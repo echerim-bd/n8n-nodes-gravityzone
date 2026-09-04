@@ -9,6 +9,8 @@ import { updateDisplayOptions, wrapData } from '../../utils/utilities';
 
 import { gravityZoneApiRequest } from '../../transport';
 
+import { companyTypeProperty, showForPartnerNested } from '../../utils/companyType';
+
 const properties: INodeProperties[] = [
 	{
 		displayName:
@@ -17,6 +19,7 @@ const properties: INodeProperties[] = [
 		type: 'notice',
 		default: '',
 	},
+	companyTypeProperty,
 	{
 		displayName: 'Options',
 		name: 'options',
@@ -24,6 +27,14 @@ const properties: INodeProperties[] = [
 		placeholder: 'Add Option',
 		default: {},
 		options: [
+			{
+				displayName: 'Company ID',
+				name: 'companyId',
+				type: 'string',
+				default: '',
+				description: 'List only the user accounts belonging to the company with this ID',
+				displayOptions: showForPartnerNested,
+			},
 			{
 				displayName: 'Page',
 				name: 'page',
@@ -62,6 +73,8 @@ export async function execute(this: IExecuteFunctions, i: number): Promise<INode
 
 	if (options.page !== undefined) params.page = options.page;
 	if (options.perPage !== undefined) params.perPage = options.perPage;
+
+	if (options.companyId) params.companyId = options.companyId;
 
 	const responseData = await gravityZoneApiRequest.call(
 		this,

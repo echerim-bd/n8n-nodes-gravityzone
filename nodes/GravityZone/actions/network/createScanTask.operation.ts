@@ -48,6 +48,13 @@ const properties: INodeProperties[] = [
 		default: {},
 		options: [
 			{
+				displayName: 'Return Task ID',
+				name: 'returnTaskId',
+				type: 'boolean',
+				default: false,
+				description: 'Whether the response returns the ID of the newly created task',
+			},
+			{
 				displayName: 'Task Name',
 				name: 'name',
 				type: 'string',
@@ -102,6 +109,8 @@ export async function execute(this: IExecuteFunctions, i: number): Promise<INode
 		}
 	}
 	if (options.returnAllTaskIds !== undefined) params.returnAllTaskIds = options.returnAllTaskIds;
+
+	if (options.returnTaskId !== undefined) params.returnTaskId = options.returnTaskId;
 
 	const responseData = await gravityZoneApiRequest.call(this, 'network', 'createScanTask', params);
 

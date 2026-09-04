@@ -9,6 +9,8 @@ import { updateDisplayOptions, wrapData } from '../../utils/utilities';
 
 import { gravityZoneApiRequest } from '../../transport';
 
+import { PARTNER_ONLY_VALUE } from '../../utils/companyType';
+
 const properties: INodeProperties[] = [
 	{
 		displayName:
@@ -72,6 +74,8 @@ const properties: INodeProperties[] = [
 					{ name: 'Integrity Monitoring Configuration Changes', value: 37 },
 					{ name: 'Mobile Security Monthly License Usage', value: 38 },
 					{ name: 'Data Insights License Usage', value: 39 },
+					{ name: 'Extended Email Security Usage', value: 40 },
+					{ name: 'Product Trial Status', value: 41, description: PARTNER_ONLY_VALUE },
 				],
 			},
 			{

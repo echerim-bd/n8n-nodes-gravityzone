@@ -9,6 +9,8 @@ import { processJsonInput, updateDisplayOptions, wrapData } from '../../utils/ut
 
 import { gravityZoneApiRequest } from '../../transport';
 
+import { companyTypeProperty, showForPartnerNested } from '../../utils/companyType';
+
 const properties: INodeProperties[] = [
 	{
 		displayName:
@@ -17,6 +19,7 @@ const properties: INodeProperties[] = [
 		type: 'notice',
 		default: '',
 	},
+	companyTypeProperty,
 	{
 		displayName: 'Type',
 		name: 'type',
@@ -47,12 +50,21 @@ const properties: INodeProperties[] = [
 		default: {},
 		options: [
 			{
+				displayName: 'Company ID',
+				name: 'companyId',
+				type: 'string',
+				default: '',
+				description: 'The ID of the company the blocklist items belong to',
+				displayOptions: showForPartnerNested,
+			},
+			{
 				displayName: 'Recursive',
 				name: 'recursive',
 				type: 'boolean',
 				default: true,
 				description:
-					'Whether the rules will be applied recursively to all companies managed by the target company',
+					'Whether the rules will be applied recursively to all companies managed by the company given in Company ID. When false, the rules are applied only to that company.',
+				displayOptions: showForPartnerNested,
 			},
 		],
 	},
@@ -70,6 +82,8 @@ export async function execute(this: IExecuteFunctions, i: number): Promise<INode
 	const params: IDataObject = { type, rules: rules as IDataObject[] };
 
 	if (options.recursive !== undefined) params.recursive = options.recursive;
+
+	if (options.companyId) params.companyId = options.companyId;
 
 	const responseData = await gravityZoneApiRequest.call(
 		this,

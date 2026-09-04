@@ -9,6 +9,8 @@ import { processJsonInput, updateDisplayOptions, wrapData } from '../../utils/ut
 
 import { gravityZoneApiRequest } from '../../transport';
 
+import { PARTNER_ONLY_VALUE } from '../../utils/companyType';
+
 const properties: INodeProperties[] = [
 	{
 		displayName:
@@ -97,7 +99,8 @@ const properties: INodeProperties[] = [
 				name: 'rightsJson',
 				type: 'json',
 				default: '{}',
-				description: 'A corresponding rights object. Only used when the role is set to custom.',
+				description:
+					'A corresponding rights object. Only used when the role is set to custom. The "manageCompanies" right is accepted only for partner-level API keys.',
 				typeOptions: {
 					alwaysOpenEditWindow: true,
 				},
@@ -119,6 +122,11 @@ const properties: INodeProperties[] = [
 					{
 						name: 'Reporter',
 						value: 3,
+					},
+					{
+						name: 'Partner',
+						value: 4,
+						description: PARTNER_ONLY_VALUE,
 					},
 					{
 						name: 'Custom',

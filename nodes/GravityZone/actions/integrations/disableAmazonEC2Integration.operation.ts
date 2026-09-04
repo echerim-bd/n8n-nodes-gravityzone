@@ -9,6 +9,8 @@ import { updateDisplayOptions, wrapData } from '../../utils/utilities';
 
 import { gravityZoneApiRequest } from '../../transport';
 
+import { companyTypeProperty, showForPartnerNested } from '../../utils/companyType';
+
 const properties: INodeProperties[] = [
 	{
 		displayName:
@@ -17,6 +19,7 @@ const properties: INodeProperties[] = [
 		type: 'notice',
 		default: '',
 	},
+	companyTypeProperty,
 	{
 		displayName: 'Options',
 		name: 'options',
@@ -30,6 +33,7 @@ const properties: INodeProperties[] = [
 				type: 'string',
 				default: '',
 				description: 'The ID of the company the integration belongs to',
+				displayOptions: showForPartnerNested,
 			},
 			{
 				displayName: 'Integration Name',
@@ -37,6 +41,7 @@ const properties: INodeProperties[] = [
 				type: 'string',
 				default: '',
 				description: 'The name identifying the specific integration to disable',
+				displayOptions: showForPartnerNested,
 			},
 		],
 	},

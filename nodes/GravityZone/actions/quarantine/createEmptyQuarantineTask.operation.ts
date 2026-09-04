@@ -9,6 +9,8 @@ import { updateDisplayOptions, wrapData } from '../../utils/utilities';
 
 import { gravityZoneApiRequest } from '../../transport';
 
+import { companyTypeProperty, showForPartnerNested } from '../../utils/companyType';
+
 const properties: INodeProperties[] = [
 	{
 		displayName:
@@ -17,6 +19,7 @@ const properties: INodeProperties[] = [
 		type: 'notice',
 		default: '',
 	},
+	companyTypeProperty,
 	{
 		displayName: 'Service',
 		name: 'service',
@@ -28,6 +31,23 @@ const properties: INodeProperties[] = [
 		],
 		description: 'Service type for quarantine',
 	},
+	{
+		displayName: 'Options',
+		name: 'options',
+		type: 'collection',
+		placeholder: 'Add Option',
+		default: {},
+		options: [
+			{
+				displayName: 'Include Sub Companies',
+				name: 'includeSubCompanies',
+				type: 'boolean',
+				default: false,
+				description: 'Whether the quarantined items of child companies are included',
+				displayOptions: showForPartnerNested,
+			},
+		],
+	},
 ];
 
 const displayOptions = {
@@ -37,9 +57,14 @@ const displayOptions = {
 export const description = updateDisplayOptions(displayOptions, properties);
 
 export async function execute(this: IExecuteFunctions, i: number): Promise<INodeExecutionData[]> {
+	const options = this.getNodeParameter('options', i, {});
+
 	const service = this.getNodeParameter('service', i) as string;
 
 	const params: IDataObject = {};
+
+	if (options.includeSubCompanies !== undefined)
+		params.includeSubCompanies = options.includeSubCompanies;
 
 	const responseData = await gravityZoneApiRequest.call(
 		this,

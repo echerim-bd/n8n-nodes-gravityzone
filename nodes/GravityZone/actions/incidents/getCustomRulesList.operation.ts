@@ -9,6 +9,8 @@ import { updateDisplayOptions, wrapData } from '../../utils/utilities';
 
 import { gravityZoneApiRequest } from '../../transport';
 
+import { companyTypeProperty, showForPartnerNested } from '../../utils/companyType';
+
 const properties: INodeProperties[] = [
 	{
 		displayName:
@@ -17,6 +19,7 @@ const properties: INodeProperties[] = [
 		type: 'notice',
 		default: '',
 	},
+	companyTypeProperty,
 	{
 		displayName: 'Options',
 		name: 'options',
@@ -24,6 +27,27 @@ const properties: INodeProperties[] = [
 		placeholder: 'Add Option',
 		default: {},
 		options: [
+			{
+				displayName: 'Company ID',
+				name: 'companyId',
+				type: 'string',
+				default: '',
+				description:
+					'The ID of the company to retrieve the custom rules for. Defaults to the company of the API key.',
+				displayOptions: showForPartnerNested,
+			},
+			{
+				displayName: 'Subtypes',
+				name: 'subtypes',
+				type: 'multiOptions',
+				default: [],
+				options: [
+					{ name: 'Basic', value: 0 },
+					{ name: 'YARA', value: 1 },
+				],
+				description:
+					'Detection rules only. Filter by rule subtype; omit to retrieve all detection rules.',
+			},
 			{
 				displayName: 'Type',
 				name: 'type',
@@ -69,6 +93,10 @@ export async function execute(this: IExecuteFunctions, i: number): Promise<INode
 	if (options.type !== undefined) params.type = options.type;
 	if (options.page !== undefined) params.page = options.page;
 	if (options.perPage !== undefined) params.perPage = options.perPage;
+
+	if (options.companyId) params.companyId = options.companyId;
+
+	if ((options.subtypes as unknown[])?.length) params.subtypes = options.subtypes;
 
 	const responseData = await gravityZoneApiRequest.call(
 		this,

@@ -64,7 +64,8 @@ const properties: INodeProperties[] = [
 				name: 'parentId',
 				type: 'string',
 				default: '',
-				description: 'The ID of the target company or group',
+				description:
+					'The ID of the target company or group. Pass a company ID to scope the query to that company. If not set, the method returns items in the targets of the company linked to the API key.',
 			},
 			{
 				displayName: 'Per Page',

@@ -9,6 +9,8 @@ import { processJsonInput, updateDisplayOptions, wrapData } from '../../utils/ut
 
 import { gravityZoneApiRequest } from '../../transport';
 
+import { companyTypeProperty, showForPartnerNested } from '../../utils/companyType';
+
 const properties: INodeProperties[] = [
 	{
 		displayName:
@@ -17,6 +19,7 @@ const properties: INodeProperties[] = [
 		type: 'notice',
 		default: '',
 	},
+	companyTypeProperty,
 	{
 		displayName: 'Name',
 		name: 'name',
@@ -42,6 +45,15 @@ const properties: INodeProperties[] = [
 		default: {},
 		options: [
 			{
+				displayName: 'Company ID',
+				name: 'companyId',
+				type: 'string',
+				default: '',
+				description:
+					'The ID of the company the custom rule will belong to. Defaults to the company of the API key used for the request.',
+				displayOptions: showForPartnerNested,
+			},
+			{
 				displayName: 'Type',
 				name: 'type',
 				type: 'options',
@@ -51,6 +63,18 @@ const properties: INodeProperties[] = [
 					{ name: 'Exclusion', value: 2 },
 				],
 				description: 'The type of the rule',
+			},
+			{
+				displayName: 'Subtype',
+				name: 'subtype',
+				type: 'options',
+				default: 0,
+				options: [
+					{ name: 'Basic', value: 0 },
+					{ name: 'YARA', value: 1 },
+				],
+				description:
+					'The kind of detection rule to create. Detection rules only - must be Basic when Type is Exclusion. Basic expects "criteriaList" in Rule Settings, YARA expects "yaraQuery" instead.',
 			},
 			{
 				displayName: 'Description',
@@ -73,6 +97,15 @@ const properties: INodeProperties[] = [
 				default: false,
 				description: 'Whether the response will return the ID of the new rule instead of a boolean',
 			},
+			{
+				displayName: 'Targets (JSON)',
+				name: 'targets',
+				type: 'json',
+				default: '{}',
+				description:
+					'A targets object that scopes the rule to specific companies or endpoint tags. Use "companiesIds" (an array of company IDs, accepted only for partner-level API keys) or "endpointTags" (an array of tagId / companyId objects) - specify only one of the two. If omitted, the rule applies to all endpoints in your company.',
+				typeOptions: { alwaysOpenEditWindow: true },
+			},
 		],
 	},
 ];
@@ -93,7 +126,10 @@ export async function execute(this: IExecuteFunctions, i: number): Promise<INode
 
 	const params: IDataObject = { name, settings };
 
+	if (options.companyId !== undefined && (options.companyId as string) !== '')
+		params.companyId = options.companyId;
 	if (options.type !== undefined) params.type = options.type;
+	if (options.subtype !== undefined) params.subtype = options.subtype;
 	if (options.description !== undefined && options.description !== '')
 		params.description = options.description;
 	if (options.tags !== undefined && (options.tags as string) !== '') {
@@ -102,6 +138,10 @@ export async function execute(this: IExecuteFunctions, i: number): Promise<INode
 			.split(',')
 			.map((t) => t.trim())
 			.filter(Boolean);
+	}
+	if (options.targets !== undefined) {
+		const targets = processJsonInput(this, options.targets, 'Targets') as IDataObject;
+		if (Object.keys(targets).length > 0) params.targets = targets;
 	}
 	if (options.returnRuleId !== undefined) params.returnRuleId = options.returnRuleId;
 
