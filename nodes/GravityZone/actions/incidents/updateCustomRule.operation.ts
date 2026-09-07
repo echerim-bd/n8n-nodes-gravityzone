@@ -75,6 +75,15 @@ const properties: INodeProperties[] = [
 				default: '',
 				description: 'A comma-separated list of tags (e.g. "tag1, tag2, tag3")',
 			},
+			{
+				displayName: 'Targets (JSON)',
+				name: 'targets',
+				type: 'json',
+				default: '{}',
+				description:
+					'A targets object that scopes the rule to specific companies or endpoint tags. Use "companiesIds" (an array of company IDs, accepted only for partner-level API keys) or "endpointTags" (an array of tagId / companyId objects) - specify only one of the two. If omitted, the rule applies to all endpoints in your company.',
+				typeOptions: { alwaysOpenEditWindow: true },
+			},
 		],
 	},
 ];
@@ -105,6 +114,11 @@ export async function execute(this: IExecuteFunctions, i: number): Promise<INode
 			.split(',')
 			.map((t) => t.trim())
 			.filter(Boolean);
+	}
+
+	if (options.targets !== undefined) {
+		const targets = processJsonInput(this, options.targets, 'Targets') as IDataObject;
+		if (Object.keys(targets).length > 0) params.targets = targets;
 	}
 
 	const responseData = await gravityZoneApiRequest.call(

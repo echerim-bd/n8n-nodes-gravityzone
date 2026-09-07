@@ -9,6 +9,8 @@ import { processJsonInput, updateDisplayOptions, wrapData } from '../../utils/ut
 
 import { gravityZoneApiRequest } from '../../transport';
 
+import { companyTypeProperty, showForPartnerNested } from '../../utils/companyType';
+
 const properties: INodeProperties[] = [
 	{
 		displayName:
@@ -17,6 +19,7 @@ const properties: INodeProperties[] = [
 		type: 'notice',
 		default: '',
 	},
+	companyTypeProperty,
 	{
 		displayName: 'Options',
 		name: 'options',
@@ -30,6 +33,27 @@ const properties: INodeProperties[] = [
 				type: 'string',
 				default: '',
 				description: 'The address of the company',
+			},
+			{
+				displayName: 'Company ID',
+				name: 'id',
+				type: 'string',
+				default: '',
+				description:
+					'The ID of the company to update. Defaults to the company linked to the user who generated the API key.',
+				displayOptions: showForPartnerNested,
+			},
+			{
+				displayName: 'Company Type',
+				name: 'type',
+				type: 'options',
+				default: 0,
+				options: [
+					{ name: 'Customer', value: 1 },
+					{ name: 'Partner', value: 0 },
+				],
+				description: 'The company type. If not set, the type is left unchanged.',
+				displayOptions: showForPartnerNested,
 			},
 			{
 				displayName: 'Contact Person (JSON)',
@@ -48,6 +72,23 @@ const properties: INodeProperties[] = [
 				default: '',
 				description:
 					"The country of operation of the company. The value must be in ISO 3166 format (e.g. 'RO').",
+			},
+			{
+				displayName: 'Custom Fields (JSON)',
+				name: 'customFields',
+				type: 'json',
+				default: '{}',
+				typeOptions: { alwaysOpenEditWindow: true },
+				description:
+					'An object holding the custom field values for the company. Set an empty array to delete them.',
+				displayOptions: showForPartnerNested,
+			},
+			{
+				displayName: 'Duplicate Closed Incidents on Update',
+				name: 'duplicateClosedIncidentsOnUpdate',
+				type: 'boolean',
+				default: false,
+				description: 'Whether closed incidents are duplicated on update rather than reopened',
 			},
 			{
 				displayName: 'Enforce 2FA',
@@ -265,7 +306,8 @@ const properties: INodeProperties[] = [
 				name: 'mdrContactInformationJson',
 				type: 'json',
 				default: '{}',
-				description: 'An MDR contact information object',
+				description:
+					'An MDR contact information object. The "useDataFromCompany" field, which imports the contact details from another company you manage, is accepted only for partner-level API keys.',
 				typeOptions: {
 					alwaysOpenEditWindow: true,
 				},
@@ -345,6 +387,18 @@ export async function execute(this: IExecuteFunctions, i: number): Promise<INode
 		if (Object.keys(mdrContactInformation).length > 0)
 			params.mdrContactInformation = mdrContactInformation;
 	}
+
+	if (options.id) params.id = options.id;
+
+	if (options.customFields !== undefined) {
+		const customFieldsValue = processJsonInput(this, options.customFields, 'customFields');
+		if (customFieldsValue !== undefined) params.customFields = customFieldsValue as IDataObject;
+	}
+
+	if (options.duplicateClosedIncidentsOnUpdate !== undefined)
+		params.duplicateClosedIncidentsOnUpdate = options.duplicateClosedIncidentsOnUpdate;
+
+	if (options.type !== undefined) params.type = options.type;
 
 	const responseData = await gravityZoneApiRequest.call(
 		this,

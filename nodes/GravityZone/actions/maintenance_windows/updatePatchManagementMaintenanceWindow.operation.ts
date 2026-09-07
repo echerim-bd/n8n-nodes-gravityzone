@@ -9,6 +9,8 @@ import { processJsonInput, updateDisplayOptions, wrapData } from '../../utils/ut
 
 import { gravityZoneApiRequest } from '../../transport';
 
+import { companyTypeProperty, showForPartnerNested } from '../../utils/companyType';
+
 const properties: INodeProperties[] = [
 	{
 		displayName:
@@ -16,6 +18,15 @@ const properties: INodeProperties[] = [
 		name: 'updatePatchManagementMaintenanceWindowDocsNotice',
 		type: 'notice',
 		default: '',
+	},
+	companyTypeProperty,
+	{
+		displayName: 'ID',
+		name: 'id',
+		type: 'string',
+		required: true,
+		default: '',
+		description: 'The ID of the maintenance window to be updated',
 	},
 	{
 		displayName: 'Name',
@@ -44,6 +55,24 @@ const properties: INodeProperties[] = [
 			alwaysOpenEditWindow: true,
 		},
 	},
+	{
+		displayName: 'Options',
+		name: 'options',
+		type: 'collection',
+		placeholder: 'Add Option',
+		default: {},
+		options: [
+			{
+				displayName: 'Company ID',
+				name: 'companyId',
+				type: 'string',
+				default: '',
+				description:
+					'The ID of the company. Defaults to the company of the user who generated the API key.',
+				displayOptions: showForPartnerNested,
+			},
+		],
+	},
 ];
 
 const displayOptions = {
@@ -56,18 +85,23 @@ const displayOptions = {
 export const description = updateDisplayOptions(displayOptions, properties);
 
 export async function execute(this: IExecuteFunctions, i: number): Promise<INodeExecutionData[]> {
+	const id = this.getNodeParameter('id', i) as string;
 	const name = this.getNodeParameter('name', i) as string;
 	const allowChangeByOtherUsers = this.getNodeParameter('allowChangeByOtherUsers', i) as boolean;
 	const settings = processJsonInput(this,
 		this.getNodeParameter('settings', i),
 		'Settings',
 	) as IDataObject;
+	const options = this.getNodeParameter('options', i, {});
 
 	const params: IDataObject = {
+		id,
 		name,
 		allowChangeByOtherUsers,
 		settings,
 	};
+
+	if (options.companyId) params.companyId = options.companyId;
 
 	const responseData = await gravityZoneApiRequest.call(
 		this,

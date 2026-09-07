@@ -9,6 +9,8 @@ import { updateDisplayOptions, wrapData } from '../../utils/utilities';
 
 import { gravityZoneApiRequest } from '../../transport';
 
+import { companyTypeProperty, showForPartnerNested } from '../../utils/companyType';
+
 const properties: INodeProperties[] = [
 	{
 		displayName:
@@ -17,6 +19,7 @@ const properties: INodeProperties[] = [
 		type: 'notice',
 		default: '',
 	},
+	companyTypeProperty,
 	{
 		displayName: 'Cross-Account Role ARN',
 		name: 'crossAccountRoleArn',
@@ -32,6 +35,15 @@ const properties: INodeProperties[] = [
 		placeholder: 'Add option',
 		default: {},
 		options: [
+			{
+				displayName: 'Company ID',
+				name: 'companyId',
+				type: 'string',
+				default: '',
+				description:
+					'The ID of the target company. Defaults to the company of the user who generated the API key.',
+				displayOptions: showForPartnerNested,
+			},
 			{
 				displayName: 'Integration Name',
 				name: 'integrationName',
@@ -60,6 +72,8 @@ export async function execute(this: IExecuteFunctions, i: number): Promise<INode
 	const params: IDataObject = { crossAccountRoleArn };
 
 	if (options.integrationName) params.integrationName = options.integrationName;
+
+	if (options.companyId) params.companyId = options.companyId;
 
 	const responseData = await gravityZoneApiRequest.call(
 		this,

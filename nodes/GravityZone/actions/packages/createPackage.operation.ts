@@ -9,6 +9,8 @@ import { processJsonInput, updateDisplayOptions, wrapData } from '../../utils/ut
 
 import { gravityZoneApiRequest } from '../../transport';
 
+import { companyTypeProperty, showForPartnerNested } from '../../utils/companyType';
+
 const properties: INodeProperties[] = [
 	{
 		displayName:
@@ -17,6 +19,7 @@ const properties: INodeProperties[] = [
 		type: 'notice',
 		default: '',
 	},
+	companyTypeProperty,
 	{
 		displayName: 'Package Name',
 		name: 'packageName',
@@ -32,6 +35,15 @@ const properties: INodeProperties[] = [
 		placeholder: 'Add Option',
 		default: {},
 		options: [
+			{
+				displayName: 'Company ID',
+				name: 'companyId',
+				type: 'string',
+				default: '',
+				description:
+					'The ID of the company. Defaults to the company of the user who generated the API key.',
+				displayOptions: showForPartnerNested,
+			},
 			{
 				displayName: 'Deployment Options (JSON)',
 				name: 'deploymentOptions',
@@ -157,6 +169,8 @@ export async function execute(this: IExecuteFunctions, i: number): Promise<INode
 		) as IDataObject;
 	}
 	if (options.productType !== undefined) params.productType = options.productType;
+
+	if (options.companyId) params.companyId = options.companyId;
 
 	const responseData = await gravityZoneApiRequest.call(this, 'packages', 'createPackage', params);
 

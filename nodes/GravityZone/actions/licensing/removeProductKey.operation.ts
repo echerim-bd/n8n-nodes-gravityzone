@@ -9,6 +9,8 @@ import { updateDisplayOptions, wrapData } from '../../utils/utilities';
 
 import { gravityZoneApiRequest } from '../../transport';
 
+import { companyTypeProperty, showForPartnerNested } from '../../utils/companyType';
+
 const properties: INodeProperties[] = [
 	{
 		displayName:
@@ -17,6 +19,7 @@ const properties: INodeProperties[] = [
 		type: 'notice',
 		default: '',
 	},
+	companyTypeProperty,
 	{
 		displayName: 'License Key',
 		name: 'licenseKey',
@@ -24,6 +27,24 @@ const properties: INodeProperties[] = [
 		required: true,
 		default: '',
 		description: 'The key of the license to be removed from the company',
+	},
+	{
+		displayName: 'Options',
+		name: 'options',
+		type: 'collection',
+		placeholder: 'Add Option',
+		default: {},
+		options: [
+			{
+				displayName: 'Company ID',
+				name: 'companyId',
+				type: 'string',
+				default: '',
+				description:
+					'The ID of the company. Defaults to the company of the user who generated the API key.',
+				displayOptions: showForPartnerNested,
+			},
+		],
 	},
 ];
 
@@ -34,9 +55,13 @@ const displayOptions = {
 export const description = updateDisplayOptions(displayOptions, properties);
 
 export async function execute(this: IExecuteFunctions, i: number): Promise<INodeExecutionData[]> {
+	const options = this.getNodeParameter('options', i, {});
+
 	const licenseKey = this.getNodeParameter('licenseKey', i) as string;
 
 	const params: IDataObject = { licenseKey };
+
+	if (options.companyId) params.companyId = options.companyId;
 
 	const responseData = await gravityZoneApiRequest.call(
 		this,

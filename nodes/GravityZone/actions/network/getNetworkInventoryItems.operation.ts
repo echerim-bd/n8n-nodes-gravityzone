@@ -29,7 +29,8 @@ const properties: INodeProperties[] = [
 				name: 'filters',
 				type: 'json',
 				default: '{}',
-				description: 'A filters object',
+				description:
+					'A filters object. Partner-level API keys can additionally filter on "subscriptionType" (an array of license subscription types) and "companyType" (0 for Partner, 1 for Customer companies).',
 				typeOptions: {
 					alwaysOpenEditWindow: true,
 				},
@@ -39,7 +40,8 @@ const properties: INodeProperties[] = [
 				name: 'queryOptions',
 				type: 'json',
 				default: '{}',
-				description: 'An options object',
+				description:
+					'An options object. Partner-level API keys can additionally request the "companies" and "companyFolders" item types under "type".',
 				typeOptions: {
 					alwaysOpenEditWindow: true,
 				},

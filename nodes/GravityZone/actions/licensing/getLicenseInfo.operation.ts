@@ -25,12 +25,12 @@ const properties: INodeProperties[] = [
 		default: {},
 		options: [
 			{
-				displayName: 'Return All Products',
-				name: 'returnAllProducts',
-				type: 'boolean',
-				default: false,
+				displayName: 'Company ID',
+				name: 'companyId',
+				type: 'string',
+				default: '',
 				description:
-					'Whether information about all the products of the given company will be included in the response',
+					'The ID of the company to retrieve license information for. Defaults to the company of the user who generated the API key.',
 			},
 			{
 				displayName: 'Page',
@@ -47,6 +47,14 @@ const properties: INodeProperties[] = [
 				typeOptions: { minValue: 1, maxValue: 100 },
 				default: 50,
 				description: 'Number of items per page',
+			},
+			{
+				displayName: 'Return All Products',
+				name: 'returnAllProducts',
+				type: 'boolean',
+				default: false,
+				description:
+					'Whether information about all the products of the given company will be included in the response',
 			},
 		],
 	},
@@ -66,6 +74,9 @@ export async function execute(this: IExecuteFunctions, i: number): Promise<INode
 	if (options.returnAllProducts !== undefined) {
 		params.returnAllProducts = options.returnAllProducts;
 	}
+
+	if (options.companyId) params.companyId = options.companyId;
+
 	if (options.page !== undefined) params.page = options.page;
 	if (options.perPage !== undefined) params.perPage = options.perPage;
 

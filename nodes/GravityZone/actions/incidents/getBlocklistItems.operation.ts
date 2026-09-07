@@ -9,6 +9,8 @@ import { updateDisplayOptions, wrapData } from '../../utils/utilities';
 
 import { gravityZoneApiRequest } from '../../transport';
 
+import { companyTypeProperty, showForPartnerNested } from '../../utils/companyType';
+
 const properties: INodeProperties[] = [
 	{
 		displayName:
@@ -17,6 +19,7 @@ const properties: INodeProperties[] = [
 		type: 'notice',
 		default: '',
 	},
+	companyTypeProperty,
 	{
 		displayName: 'Page',
 		name: 'page',
@@ -40,6 +43,24 @@ const properties: INodeProperties[] = [
 		default: 50,
 		description: 'The number of items displayed per page',
 	},
+	{
+		displayName: 'Options',
+		name: 'options',
+		type: 'collection',
+		placeholder: 'Add Option',
+		default: {},
+		options: [
+			{
+				displayName: 'Company ID',
+				name: 'companyId',
+				type: 'string',
+				default: '',
+				description:
+					'When set, only the blocklist items belonging to the company with this ID are returned',
+				displayOptions: showForPartnerNested,
+			},
+		],
+	},
 ];
 
 const displayOptions = { show: { category: ['incidents'], action: ['getBlocklistItems'] } };
@@ -47,10 +68,14 @@ const displayOptions = { show: { category: ['incidents'], action: ['getBlocklist
 export const description = updateDisplayOptions(displayOptions, properties);
 
 export async function execute(this: IExecuteFunctions, i: number): Promise<INodeExecutionData[]> {
+	const options = this.getNodeParameter('options', i, {});
+
 	const page = this.getNodeParameter('page', i) as number;
 	const perPage = this.getNodeParameter('perPage', i) as number;
 
 	const params: IDataObject = { page, perPage };
+
+	if (options.companyId) params.companyId = options.companyId;
 
 	const responseData = await gravityZoneApiRequest.call(
 		this,

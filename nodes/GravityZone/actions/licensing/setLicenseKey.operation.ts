@@ -9,6 +9,8 @@ import { processJsonInput, updateDisplayOptions, wrapData } from '../../utils/ut
 
 import { gravityZoneApiRequest } from '../../transport';
 
+import { companyTypeProperty, showForPartnerNested } from '../../utils/companyType';
+
 const properties: INodeProperties[] = [
 	{
 		displayName:
@@ -17,6 +19,7 @@ const properties: INodeProperties[] = [
 		type: 'notice',
 		default: '',
 	},
+	companyTypeProperty,
 	{
 		displayName: 'License Key',
 		name: 'licenseKey',
@@ -32,6 +35,15 @@ const properties: INodeProperties[] = [
 		placeholder: 'Add option',
 		default: {},
 		options: [
+			{
+				displayName: 'Company ID',
+				name: 'companyId',
+				type: 'string',
+				default: '',
+				description:
+					'The ID of the company whose license will be set. Defaults to the company of the requesting user.',
+				displayOptions: showForPartnerNested,
+			},
 			{
 				displayName: 'MDR Contact Information (JSON)',
 				name: 'mdrContactInformationJson',
@@ -66,6 +78,8 @@ export async function execute(this: IExecuteFunctions, i: number): Promise<INode
 		if (Object.keys(mdrContactInformation).length > 0)
 			params.mdrContactInformation = mdrContactInformation;
 	}
+
+	if (options.companyId) params.companyId = options.companyId;
 
 	const responseData = await gravityZoneApiRequest.call(this, 'licensing', 'setLicenseKey', params);
 

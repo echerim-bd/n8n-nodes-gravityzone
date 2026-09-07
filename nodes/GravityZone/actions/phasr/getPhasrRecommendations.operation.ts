@@ -9,6 +9,8 @@ import { updateDisplayOptions, wrapData } from '../../utils/utilities';
 
 import { gravityZoneApiRequest } from '../../transport';
 
+import { companyTypeProperty, showForPartnerNested } from '../../utils/companyType';
+
 const properties: INodeProperties[] = [
 	{
 		displayName:
@@ -17,6 +19,7 @@ const properties: INodeProperties[] = [
 		type: 'notice',
 		default: '',
 	},
+	companyTypeProperty,
 	{
 		displayName: 'Options',
 		name: 'options',
@@ -65,6 +68,15 @@ const properties: INodeProperties[] = [
 					{ name: 'Tampering Tool', value: 1 },
 				],
 				description: 'Filter recommendations by category type',
+			},
+			{
+				displayName: 'Company ID',
+				name: 'companyId',
+				type: 'string',
+				default: '',
+				description:
+					'The ID of the company you want to retrieve PHASR recommendations for. Defaults to the company of the API key used for the request.',
+				displayOptions: showForPartnerNested,
 			},
 			{
 				displayName: 'Created On Max',
@@ -162,6 +174,7 @@ export async function execute(this: IExecuteFunctions, i: number): Promise<INode
 
 	const params: IDataObject = {};
 
+	if (options.companyId) params.companyId = options.companyId;
 	if (options.objectId) params.objectId = options.objectId;
 	if (options.sort) params.sort = options.sort;
 	if (options.dir) params.dir = options.dir;

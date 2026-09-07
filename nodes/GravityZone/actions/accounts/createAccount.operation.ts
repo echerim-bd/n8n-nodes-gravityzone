@@ -9,6 +9,12 @@ import { processJsonInput, updateDisplayOptions, wrapData } from '../../utils/ut
 
 import { gravityZoneApiRequest } from '../../transport';
 
+import {
+	companyTypeProperty,
+	PARTNER_ONLY_VALUE,
+	showForPartnerNested,
+} from '../../utils/companyType';
+
 const properties: INodeProperties[] = [
 	{
 		displayName:
@@ -17,6 +23,7 @@ const properties: INodeProperties[] = [
 		type: 'notice',
 		default: '',
 	},
+	companyTypeProperty,
 	{
 		displayName: 'Email',
 		name: 'email',
@@ -41,6 +48,15 @@ const properties: INodeProperties[] = [
 		placeholder: 'Add Field',
 		default: {},
 		options: [
+			{
+				displayName: 'Company ID',
+				name: 'companyId',
+				type: 'string',
+				default: '',
+				description:
+					'The ID of the company to link the new account to. Defaults to the company that holds the API key.',
+				displayOptions: showForPartnerNested,
+			},
 			{
 				displayName: 'Language',
 				name: 'language',
@@ -88,7 +104,8 @@ const properties: INodeProperties[] = [
 				name: 'rightsJson',
 				type: 'json',
 				default: '{}',
-				description: 'A corresponding rights object. Only used when the role is set to custom.',
+				description:
+					'A corresponding rights object. Only used when the role is set to custom. The "manageCompanies" right is accepted only for partner-level API keys.',
 				typeOptions: {
 					alwaysOpenEditWindow: true,
 				},
@@ -110,6 +127,11 @@ const properties: INodeProperties[] = [
 					{
 						name: 'Reporter',
 						value: 3,
+					},
+					{
+						name: 'Partner',
+						value: 4,
+						description: PARTNER_ONLY_VALUE,
 					},
 					{
 						name: 'Custom',
@@ -175,9 +197,11 @@ export async function execute(this: IExecuteFunctions, i: number): Promise<INode
 			.map((id) => id.trim())
 			.filter(Boolean);
 	}
+
+	if (additionalFields.companyId) params.companyId = additionalFields.companyId;
+
 	if (additionalFields.page !== undefined) params.page = additionalFields.page;
 	if (additionalFields.perPage !== undefined) params.perPage = additionalFields.perPage;
-
 	const responseData = await gravityZoneApiRequest.call(this, 'accounts', 'createAccount', params);
 
 	return this.helpers.constructExecutionMetaData(wrapData(responseData), {

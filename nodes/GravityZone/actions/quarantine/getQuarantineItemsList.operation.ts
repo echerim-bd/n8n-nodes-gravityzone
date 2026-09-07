@@ -9,6 +9,8 @@ import { processJsonInput, updateDisplayOptions, wrapData } from '../../utils/ut
 
 import { gravityZoneApiRequest } from '../../transport';
 
+import { companyTypeProperty, showForPartnerNested } from '../../utils/companyType';
+
 const properties: INodeProperties[] = [
 	{
 		displayName:
@@ -17,6 +19,7 @@ const properties: INodeProperties[] = [
 		type: 'notice',
 		default: '',
 	},
+	companyTypeProperty,
 	{
 		displayName: 'Service',
 		name: 'service',
@@ -35,6 +38,15 @@ const properties: INodeProperties[] = [
 		placeholder: 'Add Option',
 		default: {},
 		options: [
+			{
+				displayName: 'Company ID',
+				name: 'companyId',
+				type: 'string',
+				default: '',
+				description:
+					'The ID of the company for which the quarantine items are retrieved. Defaults to the company the API key used for the request belongs to.',
+				displayOptions: showForPartnerNested,
+			},
 			{
 				displayName: 'Endpoint ID',
 				name: 'endpointId',
@@ -83,6 +95,8 @@ export async function execute(this: IExecuteFunctions, i: number): Promise<INode
 
 	const params: IDataObject = {};
 
+	if (options.companyId !== undefined && (options.companyId as string) !== '')
+		params.companyId = options.companyId;
 	if (options.endpointId !== undefined && (options.endpointId as string) !== '')
 		params.endpointId = options.endpointId;
 	if (options.filters !== undefined) {

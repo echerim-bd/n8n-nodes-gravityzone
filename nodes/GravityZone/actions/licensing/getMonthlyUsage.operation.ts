@@ -9,6 +9,8 @@ import { updateDisplayOptions, wrapData } from '../../utils/utilities';
 
 import { gravityZoneApiRequest } from '../../transport';
 
+import { companyTypeProperty, showForPartnerNested } from '../../utils/companyType';
+
 const properties: INodeProperties[] = [
 	{
 		displayName:
@@ -17,6 +19,7 @@ const properties: INodeProperties[] = [
 		type: 'notice',
 		default: '',
 	},
+	companyTypeProperty,
 	{
 		displayName: 'Target Month',
 		name: 'targetMonth',
@@ -33,6 +36,15 @@ const properties: INodeProperties[] = [
 		default: {},
 		options: [
 			{
+				displayName: 'Company ID',
+				name: 'companyId',
+				type: 'string',
+				default: '',
+				description:
+					'The ID of the company. Defaults to the company of the user who generated the API key.',
+				displayOptions: showForPartnerNested,
+			},
+			{
 				displayName: 'Company Registration Start Date',
 				name: 'companyRegistrationStartDate',
 				type: 'string',
@@ -47,6 +59,18 @@ const properties: INodeProperties[] = [
 				default: '',
 				description:
 					'Only return monthly usage for companies that were created before this UTC date (e.g. 2026-04-01T12:06:33)',
+			},
+			{
+				displayName: 'Product Type',
+				name: 'productType',
+				type: 'options',
+				default: 0,
+				options: [
+					{ name: 'Bitdefender EDR', value: 3 },
+					{ name: 'Bitdefender PHASR', value: 5 },
+					{ name: 'Endpoint Security', value: 0 },
+				],
+				description: 'The product type to report usage for',
 			},
 			{
 				displayName: 'Usage Coverage Type',
@@ -87,6 +111,10 @@ export async function execute(this: IExecuteFunctions, i: number): Promise<INode
 	if (options.companyRegistrationEndDate) {
 		params.companyRegistrationEndDate = options.companyRegistrationEndDate;
 	}
+
+	if (options.companyId) params.companyId = options.companyId;
+
+	if (options.productType !== undefined) params.productType = options.productType;
 
 	const responseData = await gravityZoneApiRequest.call(
 		this,
